@@ -1,38 +1,40 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import cors from 'cors';
-import bodyParser from 'body-parser';
-
-import Connection from '../database/db.js';
-import Router from '../routes/route.js';
+import { GridFSBucket } from 'mongodb';
 
 dotenv.config();
 
 const app = express();
-
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/', Router);
+app.use(express.json());
 
-const username = process.env.DB_USERNAME;
-const password = process.env.DB_PASSWORD;
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+}).then(() => {
+  console.log('Database connected successfully');
+}).catch((error) => {
+  console.error('Database connection error:', error);
+});
 
-// Establish database connection once
-Connection(username, password);
+const db = mongoose.connection;
+let gfs, gridfsBucket;
 
-// Exporting the serverless function handler
-export default async (req, res) => {
-  await new Promise((resolve, reject) => {
-    app(req, res, (err) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
-  }).catch((err) => {
-    console.error('Error:', err);
-    res.status(500).send({ error: 'Internal Server Error' });
+db.once('open', () => {
+  gridfsBucket = new mongoose.mongo.GridFSBucket(db.db, {
+    bucketName: 'photos'
   });
-};
+  gfs = gridfsBucket;
+});
+
+// Your routes here
+import route from './routes/route.js';
+app.use('/', route);
+
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

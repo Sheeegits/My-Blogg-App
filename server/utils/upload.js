@@ -2,7 +2,7 @@
 import multer from 'multer';
 import { GridFsStorage } from 'multer-gridfs-storage';
 
-const storage = new GridFsStorage({
+const storage = multer.memoryStorage({
   url: process.env.DB, // Use environment variable for DB URL
   file: (req, file) => {
     return {
