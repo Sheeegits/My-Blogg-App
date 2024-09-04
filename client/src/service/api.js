@@ -3,7 +3,6 @@ import axios from 'axios';
 import { API_NOTIFICATION_MESSAGES, SERVICE_URLS } from '../constants/config';
 import { getAccessToken, getType } from '../utils/common-utils'; 
 
-// Use environment variable for API URL or default to localhost for development
 const API_URL = 'https://blog-app-server-ivi9.onrender.com/';
 
 const axiosInstance = axios.create({
