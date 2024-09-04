@@ -11,6 +11,10 @@ dotenv.config();
 
 const app = express();
 
+app.get('/ping',(req,res)=>{
+  res.send("hii from server");
+})
+
 app.use(cors());
 app.use(bodyParser.json({extended: true}))
 app.use(bodyParser.urlencoded({extended: true}))
