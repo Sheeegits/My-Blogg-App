@@ -1,9 +1,10 @@
 import axios from 'axios';
 
 import { API_NOTIFICATION_MESSAGES, SERVICE_URLS } from '../constants/config';
-import { getAccessToken, getType } from '../utils/common-utils'; // Removed unused imports
- const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import { getAccessToken, getType } from '../utils/common-utils'; 
 
+// Use environment variable for API URL or default to localhost for development
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const axiosInstance = axios.create({
     baseURL: API_URL,
@@ -29,19 +30,13 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
     function(response) {
-        // Stop global loader here
         return processResponse(response);
     },
     function(error) {
-        // Stop global loader here
         return Promise.reject(ProcessError(error));
     }
 );
 
-///////////////////////////////
-// If success -> returns { isSuccess: true, data: object }
-// If fail -> returns { isFailure: true, status: string, msg: string, code: int }
-//////////////////////////////
 const processResponse = (response) => {
     if (response?.status === 200) {
         return { isSuccess: true, data: response.data };
@@ -55,32 +50,10 @@ const processResponse = (response) => {
     }
 };
 
-///////////////////////////////
-// If success -> returns { isSuccess: true, data: object }
-// If fail -> returns { isError: true, status: string, msg: string, code: int }
-//////////////////////////////
 const ProcessError = async (error) => {
     if (error.response) {
-        // Request made and server responded with a status code 
-        // that falls out of the range of 2xx
         if (error.response?.status === 403) {
             sessionStorage.clear();
-            // Uncomment and complete the following code if you want to handle token refresh
-            // try {
-            //     let response = await API.getRefreshToken({ token: getRefreshToken() });
-            //     if (response.isSuccess) {
-            //         setAccessToken(response.data.accessToken);
-            //         const requestData = error.toJSON();
-            //         let response1 = await axios({
-            //             method: requestData.config.method,
-            //             url: requestData.config.baseURL + requestData.config.url,
-            //             headers: { "content-type": "application/json", "authorization": getAccessToken() },
-            //             params: requestData.config.params
-            //         });
-            //     }
-            // } catch (error) {
-            //     return Promise.reject(error);
-            // }
         } else {
             console.log("ERROR IN RESPONSE: ", error.toJSON());
             return {
@@ -90,7 +63,6 @@ const ProcessError = async (error) => {
             };
         }
     } else if (error.request) { 
-        // The request was made but no response was received
         console.log("ERROR IN RESPONSE: ", error.toJSON());
         return {
             isError: true,
@@ -98,7 +70,6 @@ const ProcessError = async (error) => {
             code: ""
         };
     } else { 
-        // Something happened in setting up the request that triggered an Error
         console.log("ERROR IN RESPONSE: ", error.toJSON());
         return {
             isError: true,

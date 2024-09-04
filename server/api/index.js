@@ -1,40 +1,30 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+
 import cors from 'cors';
-import { GridFSBucket } from 'mongodb';
+import bodyParser from 'body-parser';
+import Connection from '../database/db.js';
+import Router from '../routes/route.js';
+
 
 dotenv.config();
 
 const app = express();
+
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json({extended: true}))
+app.use(bodyParser.urlencoded({extended: true}))
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log('Database connected successfully');
-}).catch((error) => {
-  console.error('Database connection error:', error);
-});
 
-const db = mongoose.connection;
-let gfs, gridfsBucket;
 
-db.once('open', () => {
-  gridfsBucket = new mongoose.mongo.GridFSBucket(db.db, {
-    bucketName: 'photos'
-  });
-  gfs = gridfsBucket;
-});
+app.use('/', Router);
 
-// Your routes here
-import route from './routes/route.js';
-app.use('/', route);
 
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+const PORT = 8000;
+
+app.listen(PORT, () => console.log(`server is running successfully on PORT ${PORT}`));
+
+const USERNAME = process.env.DB_USERNAME;
+const PASSWORD = process.env.DB_PASSWORD;
+
+Connection(USERNAME,PASSWORD);
